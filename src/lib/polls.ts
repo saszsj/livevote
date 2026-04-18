@@ -81,8 +81,21 @@ export async function createPoll(title: string, labels: string[]) {
       );
 
       return { slug, adminToken };
-    } catch {
-      // likely unique slug collision; retry
+    } catch (e) {
+      const err = e as { code?: unknown; message?: unknown; cause?: unknown };
+      const code =
+        typeof err?.code === "string"
+          ? err.code
+          : typeof (err?.cause as { code?: unknown } | undefined)?.code ===
+              "string"
+            ? (err.cause as { code: string }).code
+            : null;
+
+      // Postgres unique_violation. We only want to retry on slug collisions.
+      // Anything else (missing tables, auth, bad DATABASE_URL) should surface.
+      if (code === "23505") continue;
+
+      throw e;
     }
   }
 

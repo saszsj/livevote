@@ -37,9 +37,11 @@ export default function CreatePollPage() {
         slug?: string;
         adminToken?: string;
         error?: string;
+        hint?: string;
       };
       if (!res.ok) {
-        setError(data.error ?? "创建失败");
+        const msg = [data.error ?? "创建失败", data.hint].filter(Boolean).join("\n");
+        setError(msg);
         return;
       }
       if (data.slug && data.adminToken) {
@@ -103,7 +105,9 @@ export default function CreatePollPage() {
         </div>
 
         {error ? (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="whitespace-pre-line text-sm text-red-600 dark:text-red-400">
+            {error}
+          </p>
         ) : null}
 
         <button
